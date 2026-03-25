@@ -590,24 +590,34 @@ function drawTitle() {
   // animated bobo
   drawBobo(BASE_W / 2, 370, titleBounce, false, false);
 
-  // instructions
+  // HOW TO PLAY section
+  ctx.fillStyle = '#d63031';
+  ctx.font = 'bold 14px "Courier New", monospace';
+  ctx.fillText('— HOW TO PLAY —', BASE_W / 2, 440);
+
+  ctx.fillStyle = '#2d3436';
+  ctx.font = '12px "Courier New", monospace';
+  ctx.fillText('🖥️  ← → or A/D to move', BASE_W / 2, 462);
+  ctx.fillText('📱  Tap left/right to move', BASE_W / 2, 480);
+
+  ctx.font = '11px "Courier New", monospace';
   ctx.fillStyle = '#636e72';
-  ctx.font = '13px "Courier New", monospace';
-  ctx.fillText('← → or A/D to move', BASE_W / 2, 470);
-  ctx.fillText('Dodge dangers, collect power-ups!', BASE_W / 2, 490);
+  ctx.fillText('💧🔥🍳 DODGE — boiling water, flames, pots', BASE_W / 2, 505);
+  ctx.fillText('❄️ ICE = shield  |  ☕ COFFEE = speed', BASE_W / 2, 522);
+  ctx.fillText('⭐ STAR = +50 pts  |  🔇 M = mute', BASE_W / 2, 539);
 
   // start prompt (blinking)
   if (Math.sin(titleBounce * 4) > -0.3) {
     ctx.fillStyle = '#2d3436';
     ctx.font = 'bold 18px "Courier New", monospace';
-    ctx.fillText('[ TAP / PRESS SPACE ]', BASE_W / 2, 550);
+    ctx.fillText('[ TAP / PRESS SPACE ]', BASE_W / 2, 590);
   }
 
   // high score
   if (highScore > 0) {
     ctx.fillStyle = '#e17055';
     ctx.font = '14px "Courier New", monospace';
-    ctx.fillText('HIGH SCORE: ' + highScore, BASE_W / 2, 590);
+    ctx.fillText('HIGH SCORE: ' + highScore, BASE_W / 2, 625);
   }
 
   ctx.restore();
