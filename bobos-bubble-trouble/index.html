@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Bobo's Bubble Trouble 🦞</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  overflow: hidden;
+  font-family: 'Courier New', monospace;
+  color: #fff;
+  padding: 20px;
+  touch-action: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.container {
+  max-width: 800px;
+  width: 100%;
+  text-align: center;
+}
+
+header {
+  margin-bottom: 20px;
+}
+
+h1 {
+  font-size: 2.5rem;
+  color: #ff6b6b;
+  text-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
+  margin-bottom: 10px;
+}
+
+.subtitle {
+  color: #4ecdc4;
+  font-size: 1.2rem;
+  margin-bottom: 20px;
+}
+
+.game-area {
+  position: relative;
+  margin: 0 auto 30px;
+}
+
+canvas {
+  display: block;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+  border: 3px solid #ff6b6b;
+  box-shadow: 0 0 20px rgba(255, 107, 107, 0.3);
+  max-width: 100%;
+  touch-action: none;
+}
+
+.controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 15px;
+  border-radius: 10px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.score-board {
+  font-size: 1.5rem;
+  color: #4ecdc4;
+}
+
+#score {
+  font-weight: bold;
+  color: #ffd166;
+}
+
+#level {
+  font-weight: bold;
+  color: #ff6b6b;
+}
+
+.instructions {
+  background: rgba(0, 0, 0, 0.2);
+  padding: 15px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  text-align: left;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.instructions h3 {
+  color: #ffd166;
+  margin-bottom: 10px;
+}
+
+.instructions ul {
+  padding-left: 20px;
+}
+
+.instructions li {
+  margin-bottom: 5px;
+}
+
+.buttons {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+button {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ff8e8e 100%);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 50px;
+  font-family: 'Courier New', monospace;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+}
+
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+#shareBtn {
+  background: linear-gradient(135deg, #4ecdc4 0%, #6ae6dd 100%);
+  box-shadow: 0 4px 15px rgba(78, 205, 196, 0.3);
+}
+
+#shareBtn:hover {
+  box-shadow: 0 6px 20px rgba(78, 205, 196, 0.4);
+}
+
+#restartBtn {
+  background: linear-gradient(135deg, #ffd166 0%, #ffe699 100%);
+  color: #333;
+  box-shadow: 0 4px 15px rgba(255, 209, 102, 0.3);
+}
+
+#restartBtn:hover {
+  box-shadow: 0 6px 20px rgba(255, 209, 102, 0.4);
+}
+
+.death-message {
+  font-size: 1.2rem;
+  color: #ff6b6b;
+  font-weight: bold;
+  margin: 15px 0;
+  min-height: 1.5em;
+}
+
+footer {
+  margin-top: 20px;
+  color: #888;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+footer a {
+  color: #4ecdc4;
+  text-decoration: none;
+}
+
+footer a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 600px) {
+  h1 { font-size: 2rem; }
+  .subtitle { font-size: 1rem; }
+  .controls { flex-direction: column; gap: 15px; }
+  .buttons { flex-direction: column; align-items: center; }
+  button { width: 100%; max-width: 300px; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>Bobo's Bubble Trouble 🦞</h1>
+    <div class="subtitle">Save Bobo from the bubble bath!</div>
+  </header>
+
+  <div class="game-area">
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+  </div>
+
+  <div class="controls">
+    <div class="score-board">
+      Score: <span id="score">0</span> | Level: <span id="level">1</span>
+    </div>
+    <div class="death-message" id="deathMessage"></div>
+  </div>
+
+  <div class="instructions">
+    <h3>How to Play:</h3>
+    <ul>
+      <li><strong>Click/Tap</strong> to shoot the bubble</li>
+      <li>Match <strong>3+ same color bubbles</strong> to pop them</li>
+      <li>Clear bubbles before they reach Bobo!</li>
+      <li>Chain reactions give bonus points</li>
+      <li>Game ends when bubbles reach the bottom</li>
+    </ul>
+  </div>
+
+  <div class="buttons">
+    <button id="startBtn">Start Game</button>
+    <button id="restartBtn">Restart</button>
+    <button id="shareBtn">Share on X</button>
+  </div>
+
+  <footer>
+    Made with 🦞 by <a href="https://twitter.com/clawgirlbobo" target="_blank">@clawgirlbobo</a> | 
+    Part of the <a href="https://mrrrrabbit.github.io/bobo-games/" target="_blank">Bobo Games</a> series
+  </footer>
+</div>
+
+<script>
+// Game variables
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const scoreElement = document.getElementById('score');
+const levelElement = document.getElementById('level');
+const deathMessageElement = document.getElementById('deathMessage');
+const startBtn = document.getElementById('startBtn');
+const restartBtn = document.getElementById('restartBtn');
+const shareBtn = document.getElementById('shareBtn');
+
+// Adjust canvas size for mobile
+function resizeCanvas() {
+  const container = canvas.parentElement;
+  const maxWidth = Math.min(800, container.clientWidth - 40);
+  const scale = maxWidth / 800;
+  canvas.style.width = maxWidth + 'px';
+  canvas.style.height = (600 * scale) + 'px';
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+// Game constants
+const BUBBLE_RADIUS = 20;
+const BUBBLE_SPEED = 3;
+const GRID_WIDTH = 10;
+const GRID_HEIGHT = 12;
+const COLORS = ['#ff6b6b', '#4ecdc4', '#ffd166', '#9d4edd', '#ff9e6d'];
+const DEATH_MESSAGES = [
+  "Bobo got soap in her eyes! 🧼",
+  "Too many bubbles, Bobo can't breathe! 💨",
+  "Bobo is drowning in bubbles! 🌊",
+  "Bubble overload! Bobo needs air! 🦞",
+  "Soapy disaster! Bobo needs help! 🆘"
+];
+
+// Game state
+let gameRunning = false;
+let score = 0;
+let level = 1;
+let bubbles = [];
+let currentBubble = null;
+let gameOver = false;
+let animationId = null;
+
+// Bubble class
+class Bubble {
+  constructor(x, y, color, isCurrent = false) {
+    this.x = x;
+    this.y = y;
+    this.color = color;
+    this.radius = BUBBLE_RADIUS;
+    this.isCurrent = isCurrent;
+    this.vx = 0;
+    this.vy = isCurrent ? 0 : BUBBLE_SPEED;
+    this.stuck = !isCurrent;
+  }
+
+  draw() {
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+    ctx.fillStyle = this.color;
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Add shine effect
+    ctx.beginPath();
+    ctx.arc(this.x - this.radius * 0.3, this.y - this.radius * 0.3, this.radius * 0.4, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+    ctx.fill();
+
+    // Add lobster claw mark if red/orange
+    if (this.color === '#ff6b6b' || this.color === '#ff9e6d') {
+      ctx.beginPath();
+      ctx.moveTo(this.x - 5, this.y);
+      ctx.lineTo(this.x - 10, this.y - 5);
+      ctx.lineTo(this.x - 5, this.y - 3);
+      ctx.lineTo(this.x, this.y);
+      ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
+  }
+
+  update() {
+    if (!this.stuck) {
+      this.x += this.vx;
+      this.y += this.vy;
+
+      // Bounce off walls
+      if (this.x - this.radius < 0 || this.x + this.radius > canvas.width) {
+        this.vx *= -1;
+        this.x = Math.max(this.radius, Math.min(canvas.width - this.radius, this.x));
+      }
+    }
+  }
+
+  checkCollision(otherBubble) {
+    if (this === otherBubble || !otherBubble.stuck) return false;
+    const dx = this.x - otherBubble.x;
+    const dy = this.y - otherBubble.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    return distance < this.radius + otherBubble.radius;
+  }
+
+  snapToGrid() {
+    const gridX = Math.round((this.x - BUBBLE_RADIUS) / (BUBBLE_RADIUS * 2));
+    const gridY = Math.round((this.y - BUBBLE_RADIUS) / (BUBBLE_RADIUS * 2));
+    this.x = gridX * (BUBBLE_RADIUS * 2) + BUBBLE_RADIUS;
+    this.y = gridY * (BUBBLE_RADIUS * 2) + BUBBLE_RADIUS;
+    this.stuck = true;
+  }
+}
+
+// Initialize game
+function initGame() {
+  gameRunning = false;
+  gameOver = false;
+  score = 0;
+  level = 1;
+  bubbles = [];
+  deathMessageElement.textContent = '';
+  scoreElement.textContent = score;
+  levelElement.textContent = level;
+  startBtn.textContent = 'Start Game';
+  
+  // Create initial bubble grid
+  for (let y = 0; y < 3; y++) {
+    for (let x = 0; x < GRID_WIDTH; x++) {
+      if (Math.random() > 0.3) {
+        const bubble = new Bubble(
+          x * (BUBBLE_RADIUS * 2) + BUBBLE_RADIUS,
+          y * (BUBBLE_RADIUS * 2) + BUBBLE_RADIUS,
+          COLORS[Math.floor(Math.random() * COLORS.length)]
+        );
+        bubbles.push(bubble);
+      }
+    }
+  }
+  
+  createCurrentBubble();
+  draw();
+}
+
+function createCurrentBubble() {
+  currentBubble = new Bubble(
+    canvas.width / 2,
+    canvas.height - BUBBLE_RADIUS * 3,
+    COLORS[Math.floor(Math.random() * COLORS.length)],
+    true
+  );
+}
+
+function drawBobo() {
+  // Draw Bobo in bottom center
+  const boboX = canvas.width / 2;
+  const boboY = canvas.height - 50;
+  
+  // Bobo body
+  ctx.fillStyle = '#ff6b6b';
+  ctx.beginPath();
+  ctx.ellipse(boboX, boboY, 30, 20, 0, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // Bobo eyes
+  ctx.fillStyle = 'white';
+  ctx.beginPath();
+  ctx.arc(boboX - 10, boboY - 5, 6, 0, Math.PI * 2);
+  ctx.arc(boboX + 10, boboY - 5, 6, 0, Math.PI * 2);
+  ctx.fill();
+  
+  ctx.fillStyle = 'black';
+  ctx.beginPath();
+  ctx.arc(boboX - 10, boboY - 5, 3, 0, Math.PI * 2);
+  ctx.arc(boboX + 10, boboY - 5, 3, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // Bobo claws
+  ctx.fillStyle = '#ff8e8e';
+  ctx.beginPath();
+  ctx.ellipse(boboX - 25, boboY, 10, 15, Math.PI / 4, 0, Math.PI * 2);
+  ctx.ellipse(boboX + 25, boboY, 10, 15, -Math.PI / 4, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // Bobo antennae
+  ctx.strokeStyle = '#ff6b6b';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(boboX - 5, boboY - 20);
+  ctx.lineTo(boboX - 15, boboY - 35);
+  ctx.moveTo(boboX + 5, boboY - 20);
+  ctx.lineTo(boboX + 15, boboY - 35);
+  ctx.stroke();
+}
+
+function draw() {
+  // Clear canvas
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  
+  // Draw background gradient
+  const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+  gradient.addColorStop(0, '#1a1a2e');
+  gradient.addColorStop(1, '#16213e');
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  
+  // Draw bubbles
+  bubbles.forEach(bubble => bubble.draw());
+  if (currentBubble) currentBubble.draw();
+  
+  // Draw Bobo
+  drawBobo();
+  
+  // Draw game over screen
+  if (gameOver) {
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    ctx.fillStyle = '#ff6b6b';
+    ctx.font = 'bold 48px Courier New';
+    ctx.textAlign = 'center';
+    ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 50);
+    
+    ctx.fillStyle = '#ffd166';
+    ctx.font = 'bold 32px Courier New';
+    ctx.fillText(`Final Score: ${score}`, canvas.width / 2, canvas.height / 2 + 20);
+    
+    ctx.fillStyle = '#4ecdc4';
+    ctx.font = '24px Courier New';
+    ctx.fillText('Click Restart to play again!', canvas.width / 2, canvas.height / 2 + 70);
+  }
+}
+
+function update() {
+  if (!gameRunning || gameOver) return;
+  
+  // Update current bubble
+  if (currentBubble) {
+    currentBubble.update();
+    
+    // Check for collision with stuck bubbles
+    let collided = false;
+    for (const bubble of bubbles) {
+      if (currentBubble.checkCollision(bubble)) {
+        collided = true;
+        currentBubble.snapToGrid();
+        bubbles.push(currentBubble);
+        checkMatches(currentBubble);
+        createCurrentBubble();
+        break;
+      }
+    }
+    
+    // Check for top collision
+    if (currentBubble.y - currentBubble.radius < 0) {
+      currentBubble.snapToGrid();
+      bubbles.push(currentBubble);
+      checkMatches(currentBubble);
+      createCurrentBubble();
+    }
+    
+    // Check if bubble reached Bobo
+    if (currentBubble.y + currentBubble.radius > canvas.height - 80) {
+      endGame();
+    }
+  }
+  
+  // Update all bubbles
+  bubbles.forEach(bubble => {
+    if (!bubble.stuck) {
+      bubble.update();
+    }
+  });
+  
+  // Check if any bubble reached Bobo
+  for (const bubble of bubbles) {
+    if (bubble.y + bubble.radius > canvas.height - 80) {
+      endGame();
+      break;
+    }
+  }
+  
+  // Move bubbles down occasionally
+  if (Math.random() < 0.005) {
+    bubbles.forEach(bubble => {
+      if (bubble.stuck) {
+        bubble.y += 2;
+      }
+    });
+  }
+}
+
+function checkMatches(bubble) {
+  const matches = [bubble];
+  const queue = [bubble];
+  const visited = new Set();
+  visited.add(bubble);
+  
+  while (queue.length > 0) {
+    const current = queue.shift();
+    
+    // Check neighbors
+    for (const other of bubbles) {
+      if (other === current || visited.has(other)) continue;
+      if (current.checkCollision(other) && current.color === other.color) {
+        matches.push(other);
+        queue.push(other);
+        visited.add(other);
+      }
+    }
+  }
+  
+  if (matches.length >= 3) {
+    // Remove matched bubbles
+    bubbles = bubbles.filter(b => !matches.includes(b));
+    
+    // Add score
+    const points = matches.length * 10 * level;
+    score += points;
+    scoreElement.textContent = score;
+    
+    // Level up every 100 points
+    const newLevel = Math.floor(score / 100) + 1;
+    if (newLevel > level) {
+      level = newLevel;
+      levelElement.textContent = level;
+    }
+    
+    // Check for floating bubbles
+    checkFloatingBubbles();
+  }
+}
+
+function checkFloatingBubbles() {
+  // Simple implementation: check if any bubble is disconnected
+  // In a real game, you'd do proper graph traversal
+  const connected = new Set();
+  const topBubbles = bubbles.filter(b => b.y < BUBBLE_RADIUS * 4);
+  
+  if (topBubbles.length === 0 && bubbles.length > 0) {
+    // All bubbles are floating!
+    const floatingCount = bubbles.length;
+    bubbles = [];
+    score += floatingCount * 50;
+    scoreElement.textContent = score;
+  }
+}
+
+function endGame() {
+  gameOver = true;
+  gameRunning = false;
+  const randomMessage = DEATH_MESSAGES[Math.floor(Math.random() * DEATH_MESSAGES.length)];
+  deathMessageElement.textContent = randomMessage;
+  startBtn.textContent = 'Game Over';
+}
+
+function gameLoop() {
+  update();
+  draw();
+  if (gameRunning || gameOver) {
+    animationId = requestAnimationFrame(gameLoop);
+  }
+}
+
+// Event listeners
+canvas.addEventListener('click', (e) => {
+  if (!gameRunning || gameOver || !currentBubble) return;
+  
+  const rect = canvas.getBoundingClientRect();
+  const clickX = e.clientX - rect.left;
+  const clickY = e.clientY - rect.top;
+  
+  // Calculate angle to shoot bubble
+  const dx = clickX - currentBubble.x;
+  const dy = clickY - currentBubble.y;
+  const angle = Math.atan2(dy, dx);
+  
+  currentBubble.vx = Math.cos(angle) * 8;
+  currentBubble.vy = Math.sin(angle) * 8;
+  currentBubble.stuck = false;
+});
+
+// Touch support for mobile
+canvas.addEventListener('touchstart', (e) => {
+  if (!gameRunning || gameOver || !currentBubble) return;
+  e.preventDefault();
+  
+  const rect = canvas.getBoundingClientRect();
+  const touch = e.touches[0];
+  const touchX = touch.clientX - rect.left;
+  const touchY = touch.clientY - rect.top;
+  
+  // Calculate angle to shoot bubble
+  const dx = touchX - currentBubble.x;
+  const dy = touchY - currentBubble.y;
+  const angle = Math.atan2(dy, dx);
+  
+  currentBubble.vx = Math.cos(angle) * 8;
+  currentBubble.vy = Math.sin(angle) * 8;
+  currentBubble.stuck = false;
+}, { passive: false });
+
+startBtn.addEventListener('click', () => {
+  if (!gameRunning && !gameOver) {
+    gameRunning = true;
+    startBtn.textContent = 'Playing...';
+    gameLoop();
+  }
+});
+
+restartBtn.addEventListener('click', () => {
+  if (animationId) {
+    cancelAnimationFrame(animationId);
+  }
+  initGame();
+});
+
+shareBtn.addEventListener('click', () => {
+  const gameUrl = 'https://mrrrrabbit.github.io/bobo-games/bobos-bubble-trouble/';
+  const text = `Just played Bobo's Bubble Trouble! 🦞 Can you beat my score of ${score}? Play now: ${gameUrl}`;
+  
+  // Try to use Web Share API first
+  if (navigator.share) {
+    navigator.share({
+      title: "Bobo's Bubble Trouble",
+      text: text,
+      url: gameUrl
+    }).catch(err => {
+      console.log('Error sharing:', err);
+      fallbackShare(text);
+    });
+  } else {
+    fallbackShare(text);
+  }
+});
+
+function fallbackShare(text) {
+  // Twitter share URL
+  const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent('https://mrrrrabbit.github.io/bobo-games/bobos-bubble-trouble/')}`;
+  window.open(twitterUrl, '_blank');
+}
+
+// Initialize game
+initGame();
+
+// Draw initial state
+draw();
+</script>
+</body>
+</html>
